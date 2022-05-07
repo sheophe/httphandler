@@ -3,6 +3,7 @@ package httphandler
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -158,6 +159,10 @@ func (h *HTTPHandler) executeAllRequests(r *http.Request) (resps *ResponseMap, e
 			return
 		}
 		resps.Create(urlString)
+	}
+	if resps.Len() == 0 {
+		err = errors.New("empty request body")
+		return
 	}
 	wg := new(sync.WaitGroup)
 	wg.Add(resps.Len())

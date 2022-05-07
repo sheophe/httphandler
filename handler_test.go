@@ -66,6 +66,11 @@ func TestHTTPHandlerResponses(t *testing.T) {
 		},
 		{
 			Method:   http.MethodPost,
+			URLs:     []string{},
+			RespCode: http.StatusBadRequest,
+		},
+		{
+			Method:   http.MethodPost,
 			URLs:     []string{"http://abcdefgh.ijk", "http://lmnopqrs.tuv"},
 			RespCode: http.StatusRequestTimeout,
 		},
