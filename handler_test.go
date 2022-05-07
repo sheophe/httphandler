@@ -71,8 +71,8 @@ func TestHTTPHandlerResponses(t *testing.T) {
 		},
 		{
 			Method:   http.MethodPost,
-			URLs:     []string{"somegarbage"},
-			RespCode: http.StatusRequestTimeout,
+			URLs:     []string{"invalidurl"},
+			RespCode: http.StatusBadRequest,
 		},
 		{
 			Method:    http.MethodPost,

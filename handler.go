@@ -103,7 +103,11 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	select {
 	case h.requestLocks <- struct{}{}:
 		defer func() { <-h.requestLocks }()
-		resps := h.executeAllRequests(r)
+		resps, err := h.executeAllRequests(r)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 		h.writeResponse(w, resps)
 	default:
 		w.WriteHeader(http.StatusTooManyRequests)
@@ -143,12 +147,17 @@ func (h *HTTPHandler) writeResponse(w http.ResponseWriter, resps *ResponseMap) {
 
 // executeAllRequests iterates over the original request body and performs GET request for all the URLs listed.
 // It blocks until either all requests have responded, timed out or the original request context is cancelled.
-func (h *HTTPHandler) executeAllRequests(r *http.Request) (resps *ResponseMap) {
+func (h *HTTPHandler) executeAllRequests(r *http.Request) (resps *ResponseMap, err error) {
 	resps = NewResponseMap()
 	scanner := bufio.NewScanner(r.Body)
 	defer r.Body.Close()
 	for scanner.Scan() {
-		resps.Create(scanner.Text())
+		urlString := scanner.Text()
+		_, err = url.ParseRequestURI(urlString)
+		if err != nil {
+			return
+		}
+		resps.Create(urlString)
 	}
 	wg := new(sync.WaitGroup)
 	wg.Add(resps.Len())
