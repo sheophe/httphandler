@@ -102,6 +102,7 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	select {
 	case h.requestLocks <- struct{}{}:
+		defer func() { <-h.requestLocks }()
 		resps := h.executeAllRequests(r)
 		h.writeResponse(w, resps)
 	default:
@@ -143,7 +144,6 @@ func (h *HTTPHandler) writeResponse(w http.ResponseWriter, resps *ResponseMap) {
 // executeAllRequests iterates over the original request body and performs GET request for all the URLs listed.
 // It blocks until either all requests have responded, timed out or the original request context is cancelled.
 func (h *HTTPHandler) executeAllRequests(r *http.Request) (resps *ResponseMap) {
-	defer func() { <-h.requestLocks }()
 	resps = NewResponseMap()
 	scanner := bufio.NewScanner(r.Body)
 	defer r.Body.Close()
