@@ -133,18 +133,24 @@ func (h *HTTPHandler) writeResponse(w http.ResponseWriter, resps *ResponseMap) {
 	for _, resp := range resps.Map {
 		respString := "-1\n"
 		if resp.Response != nil {
-			body, err := ioutil.ReadAll(resp.Body)
+			body, err := h.readResponse(resp)
 			if err != nil {
 				panic(err)
 			}
 			respString = fmt.Sprintln(len(body))
-			resp.Body.Close()
 		}
 		_, err := w.Write([]byte(respString))
 		if err != nil {
 			panic(err)
 		}
 	}
+}
+
+// readResponse reads the response body and closes it.
+func (h *HTTPHandler) readResponse(resp Response) (body []byte, err error) {
+	defer resp.Body.Close()
+	body, err = ioutil.ReadAll(resp.Body)
+	return
 }
 
 // executeAllRequests iterates over the original request body and performs GET request for all the URLs listed.
