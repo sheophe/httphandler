@@ -138,6 +138,7 @@ func (h *HTTPHandler) writeResponse(w http.ResponseWriter, resps *ResponseMap) {
 				panic(err)
 			}
 			respString = fmt.Sprintln(len(body))
+			resp.Body.Close()
 		}
 		_, err := w.Write([]byte(respString))
 		if err != nil {
